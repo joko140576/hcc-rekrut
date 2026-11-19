@@ -199,7 +199,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
       <button class="btn-soft" id="btnPrjReset"><i class="bi bi-x-circle me-1"></i>Reset filter</button>
       <button class="btn-vio ms-auto" data-add="prj"><i class="bi bi-plus-lg me-1"></i>Tambah project</button>
     </div>
-    <div class="sub mb-3" id="prjInfo"></div>
+    <div class="sub" id="prjInfo"></div>
     <div class="row g-3 mb-4">
       <div class="col-sm-6 col-xl-3"><div class="cardx kpi k1"><div class="lbl">Total project</div><div class="num" id="pTotal">0</div><div class="lbl">sesuai filter</div><i class="bi bi-folder2-open ic"></i></div></div>
       <div class="col-sm-6 col-xl-3"><div class="cardx kpi k3"><div class="lbl">Total kebutuhan</div><div class="num" id="pKeb">0</div><div class="lbl">orang</div><i class="bi bi-person-lines-fill ic"></i></div></div>
@@ -467,7 +467,7 @@ function paintPrj(){
   if(S.dup.length) warn.push('baris project duplikat (project + kantor sama) diabaikan: '+[...new Set(S.dup)].join(', ')+' (hapus di sheet)');
   if(M.kp<0||M.km<0) warn.push('kolom kantor tidak ditemukan di salah satu sheet, pemenuhan dihitung per project saja');
   if(S.orphan) warn.push(S.orphan+' baris pemenuhan tidak terhubung ke project (project/kantor tidak sama dengan sheet project)');
-  $('#prjInfo').innerHTML=`Kolom terdeteksi → project: <b>${esc(ph[M.pk]||'-')}</b> · kebutuhan: <b>${esc(ph[M.kb]||'-')}</b> · pemenuhan: project <b>${esc(mh[M.mp]||'-')}</b>, nama <b>${esc(mh[M.mn]||'-')}</b> · kantor: <b>${esc(ph[M.kp]||'-')}</b>`+(warn.length?`<div class="warn mt-1"><i class="bi bi-exclamation-triangle me-1"></i>${esc(warn.join(' · '))}</div>`:'');
+  $('#prjInfo').innerHTML='';
   renderPrj(); renderPmp();
 }
 function renderPrj(){
