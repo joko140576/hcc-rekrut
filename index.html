@@ -87,6 +87,11 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
 .fsec:after{content:"";flex:1;height:1px;background:var(--line)}
 .formbody .form-control,.formbody .form-select{padding:12px 14px}
 .tbl td,.tbl th{white-space:nowrap}
+.kpi.k4{background:linear-gradient(135deg,#e8436b,#ff8aa3)}
+.prog{height:8px;border-radius:99px;background:#eceeff;overflow:hidden;min-width:90px}
+.prog>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--vio),var(--mint))}
+.modal-content{border-radius:var(--r);border:0;box-shadow:0 30px 70px -20px rgba(18,20,58,.5)}
+.warn{color:#c42a4d;font-weight:600}
 @media(max-width:991px){.side{transform:translateX(-100%)}.side.open{transform:none}.main{margin-left:0;padding:20px 16px 40px}.burger{display:block}.sticky-form{position:static}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -103,7 +108,13 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
       <button class="sub-item" data-view="tabel"><i class="bi bi-table"></i>Tabel Data</button>
     </div>
   </div>
-  <button class="nav-item" data-view="project"><i class="bi bi-kanban"></i>Pemenuhan Project</button>
+  <div class="nav-group" id="grp2">
+    <button class="nav-item nav-parent" id="grpBtn2"><i class="bi bi-kanban"></i>Pemenuhan Project<i class="bi bi-chevron-down chev"></i></button>
+    <div class="sub-nav">
+      <button class="sub-item" data-view="prj"><i class="bi bi-folder2-open"></i>Project</button>
+      <button class="sub-item" data-view="pmp"><i class="bi bi-people"></i>Pemenuhan Project</button>
+    </div>
+  </div>
   <div class="side-foot"><span class="dot" id="dot"></span><span id="conn">Menghubungkan…</span></div>
 </aside>
 
@@ -179,10 +190,51 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
     </div>
   </section>
 
+
   <!-- PROJECT -->
-  <section class="view" id="view-project" style="display:none">
-    <div class="coming"><div><i class="bi bi-kanban"></i><h3 class="fw-bold mt-3">Pemenuhan Project</h3><p class="text-secondary">Menu ini kita bangun setelah Pemenuhan Pengganti selesai.</p></div></div>
+  <section class="view" id="view-prj" style="display:none">
+    <div class="filters">
+      <div style="min-width:220px"><label>Project</label><select class="form-select" id="fPrj"><option value="">Semua project</option></select></div>
+      <div style="min-width:220px"><label>Kantor</label><select class="form-select" id="fKtr"><option value="">Semua kantor</option></select></div>
+      <button class="btn-soft" id="btnPrjReset"><i class="bi bi-x-circle me-1"></i>Reset filter</button>
+      <button class="btn-vio ms-auto" data-add="prj"><i class="bi bi-plus-lg me-1"></i>Tambah project</button>
+    </div>
+    <div class="sub mb-3" id="prjInfo"></div>
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6 col-xl-3"><div class="cardx kpi k1"><div class="lbl">Total project</div><div class="num" id="pTotal">0</div><div class="lbl">sesuai filter</div><i class="bi bi-folder2-open ic"></i></div></div>
+      <div class="col-sm-6 col-xl-3"><div class="cardx kpi k3"><div class="lbl">Total kebutuhan</div><div class="num" id="pKeb">0</div><div class="lbl">orang</div><i class="bi bi-person-lines-fill ic"></i></div></div>
+      <div class="col-sm-6 col-xl-3"><div class="cardx kpi k2"><div class="lbl">Sudah terpenuhi</div><div class="num" id="pTerp">0</div><div class="lbl" id="pPct">0% dari kebutuhan</div><i class="bi bi-check2-circle ic"></i></div></div>
+      <div class="col-sm-6 col-xl-3"><div class="cardx kpi k4"><div class="lbl">Sisa kebutuhan</div><div class="num" id="pSisa">0</div><div class="lbl">orang belum terisi</div><i class="bi bi-hourglass-split ic"></i></div></div>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8"><div class="cardx"><h5>Kebutuhan vs terpenuhi per project</h5><div class="sub mb-2">Jumlah orang (kolom nama di sheet pemenuhan project)</div><div class="chart-box" id="boxPrj"><canvas id="chPrj"></canvas></div></div></div>
+      <div class="col-lg-4"><div class="cardx"><h5>Komposisi pemenuhan</h5><div class="sub mb-2">Terpenuhi dan sisa kebutuhan</div><div class="chart-box" style="height:320px"><canvas id="chPrjDn"></canvas></div></div></div>
+    </div>
+    <div class="cardx">
+      <h5>Daftar project</h5><div class="sub mb-2" id="prjCount"></div>
+      <div class="table-responsive"><table class="tbl"><thead id="prjHead"></thead><tbody id="prjBody"></tbody></table></div>
+    </div>
   </section>
+
+  <!-- PEMENUHAN PROJECT -->
+  <section class="view" id="view-pmp" style="display:none">
+    <div class="filters">
+      <div style="min-width:220px"><label>Project</label><select class="form-select" id="fPmpPrj"><option value="">Semua project</option></select></div>
+      <div style="min-width:220px"><label>Cari</label><input class="form-control" id="fPmpCari" placeholder="Cari nama…"></div>
+      <button class="btn-vio ms-auto" data-add="pmp"><i class="bi bi-plus-lg me-1"></i>Tambah pemenuhan</button>
+    </div>
+    <div class="cardx">
+      <h5>Pemenuhan project</h5><div class="sub mb-2" id="pmpCount"></div>
+      <div class="table-responsive"><table class="tbl"><thead id="pmpHead"></thead><tbody id="pmpBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- MODAL FORM PROJECT -->
+  <div class="modal fade" id="mdl" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><form class="modal-content" id="mdlForm" autocomplete="off">
+    <div class="modal-header border-0 pb-0"><h5 class="modal-title fw-bold" id="mdlTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><div class="row g-3" id="mdlBody"></div></div>
+    <div class="modal-footer border-0"><button type="button" class="btn-soft" data-bs-dismiss="modal">Batal</button><button class="btn-vio" id="mdlSave" type="submit"><i class="bi bi-check2 me-1"></i>Simpan</button></div>
+  </form></div></div>
 </main>
 
 <div class="toastx" id="toast"></div>
@@ -191,7 +243,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 /* ================= KONFIGURASI ================= */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzoODYL8RUwyeEol7GOY-CGhR1K3_Q2k7Xm9TFw5PwzHthAL3ccfVKdoHj81EEvBond/exec'; 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxrQLRbICWP8OAAJPEw9RUQlIUOvUvfPpB9m7AtQRtbL6I_3gcuhWVMG9sC8kLf7wPj/exec'; 
 const STATUS_KELUAR = ['Undur Diri','Habis Kontrak','Mangkir','PHK','Meninggal Dunia','Mutasi','Non Aktif','Pensiun'];
 const STATUS_GANTI  = ['Done','Proses'];
 /* ============================================== */
@@ -357,24 +409,180 @@ async function load(fresh){
 ['#fKeluar','#fGanti','#fKantor'].forEach(s=>$(s).addEventListener('change',()=>{buildFilters();render();}));
 $('#fCari').addEventListener('input',renderTable);
 $('#btnReset').onclick=()=>{['#fKeluar','#fGanti','#fKantor'].forEach(s=>$(s).value='');buildFilters();render();};
-$('#btnRefresh').onclick=()=>load(true);
+$('#btnRefresh').onclick=()=>(CUR==='prj'||CUR==='pmp')?loadPrj(true):load(true);
 $('#burger').onclick=()=>$('#side').classList.toggle('open');
+/* ===================== PEMENUHAN PROJECT ===================== */
+const PK='pemenuhan_project_v1';
+let P={prj:{headers:[],rows:[]},pmp:{headers:[],rows:[]}}, pLoaded=false, pLoading=false, M={pk:0,kb:-1,mp:-1,mn:-1,kp:-1,km:-1}, formKind='prj', CUR='dash';
+const nk=s=>String(s??'').toLowerCase().replace(/\s+/g,' ').trim();
+const cell=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?fmtD(v):esc(v||'–');
+const mk=(id,cfg)=>{if(charts[id])charts[id].destroy();charts[id]=new Chart($(id),cfg);};
+async function apiPrj(){
+  if(demo) return {project:{headers:['Project','Kebutuhan'],rows:[{row:2,v:['Project A','5']},{row:3,v:['Project B','3']}]},pemenuhan:{headers:['Project','Nama'],rows:[{row:2,v:['Project A','Andi']},{row:3,v:['Project A','Budi']},{row:4,v:['Project B','Citra']}]}};
+  return withRetry(()=>fetchJson(GAS_URL+'?action=projects&t='+Date.now()));
+}
+/* Deteksi kolom otomatis dari header sheet */
+function detect(){
+  const ph=P.prj.headers, mh=P.pmp.headers, f=(hs,re,ex=-1)=>hs.findIndex((h,i)=>i!==ex&&re.test(h));
+  let pk=f(ph,/^(nama\s*)?project$/i); if(pk<0)pk=f(ph,/project/i); if(pk<0)pk=0;
+  let kb=f(ph,/kebutuhan|kuota|target|butuh|jumlah|qty/i,pk);
+  if(kb<0)kb=ph.findIndex((h,i)=>i!==pk&&P.prj.rows.some(r=>r.v[i]!==''&&!isNaN(Number(r.v[i])))&&P.prj.rows.every(r=>r.v[i]===''||!isNaN(Number(r.v[i]))));
+  const mp=f(mh,/project/i); let mn=mh.findIndex((h,i)=>i!==mp&&/^nama/i.test(h)); if(mn<0)mn=mh.findIndex((h,i)=>i!==mp&&h);
+  const kre=/kantor|cabang|lokasi|wilayah|area/i, kp=f(ph,kre,pk), km=f(mh,kre,mp);
+  M={pk,kb,mp,mn,kp,km};
+}
+/* Relasi: sheet pemenuhan project -> sheet project lewat kolom project */
+function stats(){
+  /* Satu baris project = kombinasi project + kantor (kunci unik). Pemenuhan dicocokkan lewat project + kantor. */
+  const hasK=M.kp>=0&&M.km>=0;
+  const kf=(p,k)=>nk(p)+'|'+(hasK?nk(k):'');
+  const num=v=>{const m=String(v??'').replace(/\./g,'').match(/-?\d+/);return m?+m[0]:0};
+  const uniq=new Map(), dup=[];
+  P.prj.rows.forEach(r=>{
+    const name=String(r.v[M.pk]??'').trim(); if(!name) return;
+    const ktr=hasK?String(r.v[M.kp]??'').trim():'', k=kf(name,ktr), keb=M.kb>=0?num(r.v[M.kb]):0;
+    if(uniq.has(k)){ dup.push(name+(ktr?' - '+ktr:'')); }
+    else uniq.set(k,{r,name,ktr,keb});
+  });
+  const cnt={}; let orphan=0;
+  P.pmp.rows.forEach(r=>{
+    if(M.mn>=0&&!String(r.v[M.mn]).trim()) return;
+    const k=kf(r.v[M.mp],hasK?r.v[M.km]:''); if(uniq.has(k)) cnt[k]=(cnt[k]||0)+1; else orphan++;
+  });
+  const list=[...uniq.entries()].map(([k,u])=>{
+    const t=cnt[k]||0, keb=u.keb;
+    return {r:u.r,name:u.name,ktr:u.ktr,keb,t,sisa:Math.max(keb-t,0),pct:keb?Math.min(Math.round(t/keb*100),100):0,st:keb>0&&t>=keb?'Terpenuhi':t>0?'Sebagian':'Belum Terisi'};
+  });
+  const names=[...new Set(list.map(x=>x.name))], ktrs=[...new Set(list.map(x=>x.ktr).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  return {list,orphan,dup,names,ktrs,hasK,kf,keyP:r=>kf(r.v[M.mp],hasK?r.v[M.km]:''),known:new Set(uniq.keys())};
+}
+const stCls=s=>({'Terpenuhi':'p-done','Sebagian':'p-proses','Belum Terisi':'p-belum'}[s]||'p-lain');
+function fillSel(sel,first,list){const v=sel.value;sel.innerHTML=`<option value="">${first}</option>`+list.map(x=>`<option>${esc(x)}</option>`).join('');sel.value=list.includes(v)?v:'';}
+function paintPrj(){
+  detect(); const S=stats(), names=S.names;
+  fillSel($('#fPrj'),'Semua project',names); fillSel($('#fPmpPrj'),'Semua project',names); fillSel($('#fKtr'),'Semua kantor',S.ktrs);
+  const ph=P.prj.headers, mh=P.pmp.headers, warn=[];
+  if(M.kb<0) warn.push('kolom kebutuhan di sheet project tidak ditemukan');
+  if(M.mp<0) warn.push('kolom project di sheet pemenuhan project tidak ditemukan');
+  if(S.dup.length) warn.push('baris project duplikat (project + kantor sama) diabaikan: '+[...new Set(S.dup)].join(', ')+' (hapus di sheet)');
+  if(M.kp<0||M.km<0) warn.push('kolom kantor tidak ditemukan di salah satu sheet, pemenuhan dihitung per project saja');
+  if(S.orphan) warn.push(S.orphan+' baris pemenuhan tidak terhubung ke project (project/kantor tidak sama dengan sheet project)');
+  $('#prjInfo').innerHTML=`Kolom terdeteksi → project: <b>${esc(ph[M.pk]||'-')}</b> · kebutuhan: <b>${esc(ph[M.kb]||'-')}</b> · pemenuhan: project <b>${esc(mh[M.mp]||'-')}</b>, nama <b>${esc(mh[M.mn]||'-')}</b> · kantor: <b>${esc(ph[M.kp]||'-')}</b>`+(warn.length?`<div class="warn mt-1"><i class="bi bi-exclamation-triangle me-1"></i>${esc(warn.join(' · '))}</div>`:'');
+  renderPrj(); renderPmp();
+}
+function renderPrj(){
+  const S=stats(), fp=$('#fPrj').value, fk=$('#fKtr').value;
+  const l=S.list.filter(x=>(!fp||x.name===fp)&&(!fk||x.ktr===fk));
+  const sum=k=>l.reduce((a,x)=>a+x[k],0), keb=sum('keb'), t=sum('t'), sisa=sum('sisa');
+  countUp($('#pTotal'),l.length); countUp($('#pKeb'),keb); countUp($('#pTerp'),t); countUp($('#pSisa'),sisa);
+  $('#pPct').textContent=(keb?Math.min(Math.round(t/keb*100),100):0)+'% dari kebutuhan';
+  const horiz=l.length>8, ax={beginAtZero:true,ticks:{precision:0},grid:{color:'#eef0f8'},border:{display:false}}, ay={grid:{display:false}};
+  $('#boxPrj').style.height=horiz?Math.max(300,l.length*34+70)+'px':'320px';
+  const lg={position:'bottom',labels:{usePointStyle:true,font:{family:'Plus Jakarta Sans',weight:600}}};
+  mk('#chPrj',{type:'bar',data:{labels:l.map(x=>x.name+(x.ktr?' · '+x.ktr:'')),datasets:[
+    {label:'Kebutuhan',data:l.map(x=>x.keb),backgroundColor:'#d5d8fb',borderRadius:8,maxBarThickness:34},
+    {label:'Terpenuhi',data:l.map(x=>x.t),backgroundColor:'#5b4bff',borderRadius:8,maxBarThickness:34}]},
+    options:{indexAxis:horiz?'y':'x',maintainAspectRatio:false,plugins:{legend:lg},scales:horiz?{x:ax,y:ay}:{y:ax,x:ay}}});
+  mk('#chPrjDn',{type:'doughnut',data:{labels:['Terpenuhi','Sisa kebutuhan'],datasets:[{data:[t,sisa],backgroundColor:['#12b886','#ffa62b'],borderWidth:4,borderColor:'#fff'}]},options:{maintainAspectRatio:false,cutout:'66%',plugins:{legend:lg}}});
+  const cols=P.prj.headers.map((h,i)=>({h,i})).filter(c=>c.h);
+  $('#prjHead').innerHTML='<tr>'+cols.map(c=>`<th>${esc(c.h)}</th>`).join('')+'<th>Terpenuhi</th><th>Sisa</th><th>Progres</th><th>Status</th><th></th></tr>';
+  $('#prjCount').textContent=`${l.length} dari ${S.list.length} project`;
+  $('#prjBody').innerHTML=l.length?l.map(x=>`<tr>${cols.map(c=>`<td${c.i===M.pk?' class="fw-bold"':''}>${cell(x.r.v[c.i])}</td>`).join('')}
+    <td class="fw-bold">${x.t}</td><td>${x.sisa}</td>
+    <td style="min-width:150px"><div class="d-flex align-items-center gap-2"><div class="prog flex-grow-1"><i style="width:${x.pct}%"></i></div><b>${x.pct}%</b></div></td>
+    <td><span class="pill ${stCls(x.st)}">${x.st}</span></td>
+    <td><button class="btn btn-sm text-danger" data-pdel="prj" data-row="${x.r.row}" title="Hapus"><i class="bi bi-trash3"></i></button></td></tr>`).join('')
+    :`<tr><td colspan="${cols.length+5}"><div class="empty"><i class="bi bi-inbox"></i>Belum ada project yang cocok.</div></td></tr>`;
+}
+function renderPmp(){
+  const S=stats(), fp=nk($('#fPmpPrj').value), q=nk($('#fPmpCari').value);
+  const l=P.pmp.rows.filter(r=>(!fp||nk(r.v[M.mp])===fp)&&(!q||r.v.some(v=>nk(v).includes(q))));
+  const cols=P.pmp.headers.map((h,i)=>({h,i})).filter(c=>c.h);
+  $('#pmpHead').innerHTML='<tr><th>No</th>'+cols.map(c=>`<th>${esc(c.h)}</th>`).join('')+'<th>Relasi project</th><th></th></tr>';
+  $('#pmpCount').textContent=`${l.length} dari ${P.pmp.rows.length} data`;
+  $('#pmpBody').innerHTML=l.length?l.map((r,n)=>{const ok=S.known.has(S.keyP(r));return `<tr><td class="sub">${n+1}</td>${cols.map(c=>`<td${c.i===M.mn?' class="fw-bold"':''}>${c.i===M.mp?`<span class="pill p-lain">${esc(r.v[c.i]||'–')}</span>`:cell(r.v[c.i])}</td>`).join('')}
+    <td><span class="pill ${ok?'p-done':'p-belum'}">${ok?'Terhubung':'Tidak terhubung'}</span></td>
+    <td><button class="btn btn-sm text-danger" data-pdel="pmp" data-row="${r.row}" title="Hapus"><i class="bi bi-trash3"></i></button></td></tr>`}).join('')
+    :`<tr><td colspan="${cols.length+3}"><div class="empty"><i class="bi bi-inbox"></i>Belum ada data pemenuhan yang cocok.</div></td></tr>`;
+}
+async function loadPrj(fresh){
+  if(pLoading) return; pLoading=true;
+  if(!pLoaded){
+    try{const c=JSON.parse(localStorage.getItem(PK)); if(c&&c.data&&c.data.project&&c.data.pemenuhan){P={prj:c.data.project,pmp:c.data.pemenuhan};pLoaded=true;paintPrj();setConn(false,'Cache • '+ago(c.t)+' · menyegarkan…');}}catch(e){}
+    if(!pLoaded) $('#prjBody').innerHTML=$('#pmpBody').innerHTML=`<tr><td colspan="12" class="empty skeleton">Memuat data project… (koneksi pertama bisa 5–10 detik)</td></tr>`;
+  }
+  try{
+    const d=await apiPrj();
+    if(!d||d.ok===false) throw new Error((d&&d.error)||'Respons server tidak valid');
+    if(!d.project||!d.pemenuhan) throw new Error('Server belum mendukung data project (Code.gs belum di-deploy versi terbaru)');
+    P={prj:d.project,pmp:d.pemenuhan}; pLoaded=true;
+    try{localStorage.setItem(PK,JSON.stringify({t:Date.now(),data:d}));}catch(e){}
+    paintPrj(); setConn(!demo,demo?'Mode demo (GAS belum diisi)':'Terhubung • '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}));
+  }catch(err){
+    if(pLoaded){toast('Gagal menyegarkan ('+err.message+'). Memakai data tersimpan.',false);setConn(false,'Offline • data cache');}
+    else{setConn(false,'Gagal terhubung');$('#prjBody').innerHTML=$('#pmpBody').innerHTML=`<tr><td colspan="12"><div class="empty"><i class="bi bi-wifi-off"></i>Data project gagal dimuat: ${esc(err.message)}<br>Pastikan Code.gs terbaru sudah di-deploy (New version) dan sheet “project” serta “pemenuhan project” ada.</div></td></tr>`;}
+  }
+  pLoading=false;
+}
+function openForm(kind){
+  if(!pLoaded){toast('Data belum dimuat',false);return;}
+  formKind=kind; const names=stats().names;
+  $('#mdlTitle').textContent=kind==='prj'?'Tambah project':'Tambah pemenuhan project';
+  $('#mdlBody').innerHTML=P[kind].headers.map((h,i)=>{
+    if(!h) return '';
+    const req=kind==='prj'?i===M.pk:(i===M.mp||i===M.mn); let inp;
+    if(kind==='pmp'&&i===M.mp) inp=`<select class="form-select" name="f${i}" required><option value="">Pilih project…</option>${names.map(n=>`<option>${esc(n)}</option>`).join('')}</select>`;
+    else{const t=/tanggal|tgl|date/i.test(h)?'date':(kind==='prj'&&i===M.kb?'number':'text'); inp=`<input class="form-control" type="${t}" ${t==='number'?'min="0"':''} name="f${i}" ${req?'required':''}>`;}
+    return `<div class="col-md-6"><div class="fl">${esc(h)}${req?' *':''}</div>${inp}</div>`;
+  }).join('');
+  bootstrap.Modal.getOrCreateInstance($('#mdl')).show();
+}
+$('#mdlForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const btn=$('#mdlSave'),old=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan…';
+  try{
+    const fd=new FormData(e.target), values={};
+    P[formKind].headers.forEach((h,i)=>{if(h)values[h]=String(fd.get('f'+i)||'').trim().replace(/\s+/g,' ');});
+    if(formKind==='prj'){const S=stats(); if(S.known.has(S.kf(values[P.prj.headers[M.pk]],S.hasK?values[P.prj.headers[M.kp]]:''))) throw new Error('Project untuk kantor ini sudah ada, tidak boleh duplikat');}
+    if(demo) throw new Error('Mode demo: isi GAS_URL dulu');
+    await apiPost({action:'padd',sheet:formKind,values}); toast('Data tersimpan');
+    bootstrap.Modal.getOrCreateInstance($('#mdl')).hide(); await loadPrj(true);
+  }catch(err){toast('Gagal menyimpan: '+err.message,false);}
+  btn.disabled=false; btn.innerHTML=old;
+});
+document.addEventListener('click',async e=>{
+  const a=e.target.closest('[data-add]'); if(a){openForm(a.dataset.add);return;}
+  const d=e.target.closest('[data-pdel]'); if(!d||!confirm('Hapus data ini dari spreadsheet?')) return;
+  const rec=P[d.dataset.pdel].rows.find(r=>String(r.row)===d.dataset.row); if(!rec) return;
+  try{await apiPost({action:'pdel',sheet:d.dataset.pdel,row:+d.dataset.row,check:rec.v.join('|')}); toast('Data dihapus'); await loadPrj(true);}
+  catch(err){toast('Gagal menghapus: '+err.message,false);}
+});
+['#fPrj','#fKtr'].forEach(s=>$(s).addEventListener('change',renderPrj));
+$('#fPmpPrj').addEventListener('change',renderPmp); $('#fPmpCari').addEventListener('input',renderPmp);
+$('#btnPrjReset').onclick=()=>{$('#fPrj').value='';$('#fKtr').value='';renderPrj();};
+
 const PAGES={
   dash:['Dashboard Pemenuhan Pengganti','Pantau pegawai keluar dan progres penggantinya.'],
   form:['Form Input','Catat pegawai keluar beserta data penggantinya.'],
   tabel:['Tabel Data','Seluruh isi sheet pegawai-pengganti.'],
-  project:['Pemenuhan Project','Segera hadir.']};
+  prj:['Project','Kebutuhan project dan jumlah orang yang sudah memenuhi.'],
+  pmp:['Pemenuhan Project','Daftar orang yang memenuhi tiap project, terhubung ke sheet project.']};
 function go(v){
+  CUR=v;
   document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
   document.querySelectorAll('.view').forEach(x=>x.style.display=x.id==='view-'+v?'':'none');
-  $('#grp').classList.toggle('on',v!=='project');
+  const g1=['dash','form','tabel'].includes(v);
+  $('#grp').classList.toggle('on',g1); $('#grp2').classList.toggle('on',!g1);
+  $(g1?'#grp':'#grp2').classList.add('open');
   $('#pgTitle').textContent=PAGES[v][0];$('#pgSub').textContent=PAGES[v][1];
-  $('#btnRefresh').style.display=v==='form'||v==='project'?'none':'';
+  $('#btnRefresh').style.display=(v==='form')?'none':'';
   $('#side').classList.remove('open');
   if(v==='dash')Object.values(charts).forEach(c=>c.resize());
+  if(v==='prj'||v==='pmp'){ if(!pLoaded) loadPrj(); else if(v==='prj') ['#chPrj','#chPrjDn'].forEach(k=>charts[k]&&charts[k].resize()); }
 }
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>go(b.dataset.view));
 $('#grpBtn').onclick=()=>$('#grp').classList.toggle('open');
+$('#grpBtn2').onclick=()=>$('#grp2').classList.toggle('open');
 go('dash');
 $('#frm').addEventListener('submit',async e=>{
   e.preventDefault();
