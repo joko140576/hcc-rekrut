@@ -13,6 +13,8 @@
 
 const SPREADSHEET_ID = '1uOyBYbSVFhprHvn7-eUu8INgrwR4nXyHr3WN7nRCZyA';
 const SHEET_NAME = 'pegawai-pengganti'; // dibuat otomatis bila belum ada
+const PROJECT_SHEET = 'project';
+const PEMENUHAN_SHEET = 'pegawai-project'; // nama tab sesuai spreadsheet
 const HEADERS = ['Nama', 'NPP', 'Tanggal Keluar', 'Status Keluar', 'Kantor',
   'No Surat Nitro', 'Tanggal Surat', 'Status Pengganti', 'Nama Pengganti', 'Tanggal Masuk'];
 
@@ -80,9 +82,72 @@ function cacheClear_() {
   } catch (e) {}
 }
 
+/* ---------- PEMENUHAN PROJECT (sheet "project" & "pemenuhan project") ---------- */
+// Struktur kolom dibaca dari baris 1 (header) masing-masing sheet, jadi tidak ditulis ulang di sini.
+function normName_(s) { return String(s).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+function findSheet_(name) {
+  const all = SpreadsheetApp.openById(SPREADSHEET_ID).getSheets();
+  const sh = all.filter(function (s) { return normName_(s.getName()) === normName_(name); })[0];
+  if (!sh) throw new Error('Sheet "' + name + '" tidak ditemukan. Sheet yang ada: ' + all.map(function (s) { return s.getName(); }).join(', '));
+  return sh;
+}
+
+function tabOf_(kind) { return findSheet_(kind === 'prj' ? PROJECT_SHEET : PEMENUHAN_SHEET); }
+
+function readTab_(sh) {
+  const lr = sh.getLastRow(), lc = sh.getLastColumn();
+  if (!lr || !lc) return { headers: [], rows: [] };
+  const vals = sh.getRange(1, 1, lr, lc).getValues();
+  const rows = [];
+  for (let i = 1; i < vals.length; i++) {
+    const v = vals[i].map(fmt_);
+    if (v.some(function (x) { return x !== ''; })) rows.push({ row: i + 1, v: v });
+  }
+  return { headers: vals[0].map(fmt_), rows: rows };
+}
+
+function readProjects_() {
+  return { ok: true, project: readTab_(tabOf_('prj')), pemenuhan: readTab_(tabOf_('pmp')), updated: new Date().getTime() };
+}
+
+function addTab_(sh, values) {
+  const lc = sh.getLastColumn();
+  const hs = sh.getRange(1, 1, 1, lc).getValues()[0].map(fmt_);
+  const row = hs.map(function (h) {
+    const v = values ? values[h] : '';
+    return v === undefined || v === null ? '' : String(v).trim().replace(/\s+/g, ' ');
+  });
+  if (!row.some(function (x) { return x !== ''; })) throw new Error('Data kosong');
+  if (sh.getName() === findSheet_(PROJECT_SHEET).getName() && sh.getLastRow() > 1) {
+    // Kombinasi project + kantor tidak boleh duplikat
+    let pk = hs.findIndex(function (h) { return /^(nama\s*)?project$/i.test(h); });
+    if (pk < 0) pk = hs.findIndex(function (h) { return /project/i.test(h); });
+    if (pk < 0) pk = 0;
+    const kk = hs.findIndex(function (h, i) { return i !== pk && /kantor|cabang|lokasi|wilayah|area/i.test(h); });
+    const data = sh.getRange(2, 1, sh.getLastRow() - 1, lc).getValues();
+    const keyOf = function (r) { return normName_(r[pk]) + '|' + (kk >= 0 ? normName_(r[kk]) : ''); };
+    const mine = keyOf(row);
+    if (row[pk] && data.some(function (r) { return keyOf(r) === mine; })) throw new Error('Project untuk kantor ini sudah ada, tidak boleh duplikat');
+  }
+  const next = sh.getLastRow() + 1;
+  hs.forEach(function (h, i) { if (/npp|nip|nik/i.test(h)) sh.getRange(next, i + 1).setNumberFormat('@'); });
+  sh.getRange(next, 1, 1, lc).setValues([row.map(function (x, i) {
+    return /kebutuhan|kuota|target|jumlah|qty/i.test(hs[i]) && x !== '' && !isNaN(Number(x)) ? Number(x) : x;
+  })]);
+}
+
+function deleteTab_(sh, rowNo, check) {
+  if (!(rowNo > 1) || rowNo > sh.getLastRow()) throw new Error('Baris tidak valid, muat ulang data');
+  const cur = sh.getRange(rowNo, 1, 1, sh.getLastColumn()).getValues()[0].map(fmt_).join('|');
+  if (check !== undefined && check !== null && String(check) !== cur) throw new Error('Data sudah berubah, muat ulang lalu coba lagi');
+  sh.deleteRow(rowNo);
+}
+
 /* ---------- GET ?action=list[&fresh=1] ---------- */
 function doGet(e) {
   try {
+    if (e && e.parameter && e.parameter.action === 'projects') return json_(readProjects_());
     const fresh = e && e.parameter && e.parameter.fresh === '1';
     if (!fresh) {
       const hit = cacheGet_();
@@ -150,6 +215,18 @@ function doPost(e) {
       sh.deleteRow(rowNo);
       SpreadsheetApp.flush();
       cacheClear_();
+      return json_({ ok: true, message: 'Data dihapus' });
+    }
+
+    if (p.action === 'padd') {
+      addTab_(tabOf_(p.sheet), p.values);
+      SpreadsheetApp.flush();
+      return json_({ ok: true, message: 'Data tersimpan' });
+    }
+
+    if (p.action === 'pdel') {
+      deleteTab_(tabOf_(p.sheet), Number(p.row), p.check);
+      SpreadsheetApp.flush();
       return json_({ ok: true, message: 'Data dihapus' });
     }
 
