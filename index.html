@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Pemenuhan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+:root{--ink:#12143a;--ink2:#1c1f52;--bg:#f2f3fa;--card:#fff;--line:#e5e7f3;--txt:#1d2046;--mute:#7b7fa3;
+--vio:#5b4bff;--vio2:#8a7dff;--mint:#12b886;--amb:#ffa62b;--rose:#f0506e;--r:18px}
+*{font-family:'Plus Jakarta Sans',sans-serif}
+body{background:var(--bg);color:var(--txt);min-height:100vh}
+/* Sidebar */
+.side{position:fixed;inset:0 auto 0 0;width:264px;background:linear-gradient(170deg,var(--ink),#0b0c27);color:#fff;padding:26px 18px;z-index:50;display:flex;flex-direction:column;transition:transform .3s}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px 28px}
+.brand .logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--vio),var(--amb));display:grid;place-items:center;font-size:20px;box-shadow:0 8px 24px rgba(91,75,255,.5)}
+.brand b{font-size:17px;letter-spacing:.2px}.brand small{display:block;color:#9a9dc9;font-size:11.5px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;color:#b9bce3;cursor:pointer;font-weight:600;font-size:14.5px;margin-bottom:6px;transition:.2s;border:0;background:none;width:100%;text-align:left}
+.nav-item i{font-size:18px}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:linear-gradient(90deg,var(--vio),#7a6cff);color:#fff;box-shadow:0 10px 26px rgba(91,75,255,.45)}
+.side-foot{margin-top:auto;padding:14px;border-radius:14px;background:rgba(255,255,255,.06);font-size:12px;color:#aeb1da}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mint);margin-right:6px;box-shadow:0 0 0 4px rgba(18,184,134,.2)}
+.dot.off{background:var(--amb);box-shadow:0 0 0 4px rgba(255,166,43,.2)}
+.main{margin-left:264px;padding:30px 34px 50px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
+.topbar h1{font-size:27px;font-weight:800;margin:0;letter-spacing:-.4px}
+.topbar p{margin:2px 0 0;color:var(--mute);font-size:14px}
+.burger{display:none;border:0;background:var(--card);width:42px;height:42px;border-radius:12px;font-size:22px}
+/* Cards */
+.cardx{background:var(--card);border-radius:var(--r);padding:22px;border:1px solid var(--line);box-shadow:0 12px 34px -18px rgba(33,36,94,.28)}
+.cardx h5{font-size:15.5px;font-weight:700;margin:0 0 4px}
+.sub{color:var(--mute);font-size:12.5px}
+.filters{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin-bottom:22px;padding:16px 20px;background:var(--card);border-radius:var(--r);border:1px solid var(--line)}
+.filters label{font-size:12px;font-weight:700;color:var(--mute);margin-bottom:5px;display:block}
+.form-select,.form-control{border-radius:12px;border:1.5px solid var(--line);padding:10px 14px;font-size:14px;background-color:#fafbff}
+.form-select:focus,.form-control:focus{border-color:var(--vio);box-shadow:0 0 0 4px rgba(91,75,255,.14)}
+.btn-vio{background:linear-gradient(90deg,var(--vio),#7a6cff);color:#fff;border:0;border-radius:12px;padding:11px 20px;font-weight:700;box-shadow:0 10px 24px -8px rgba(91,75,255,.65);transition:.2s}
+.btn-vio:hover{color:#fff;transform:translateY(-1px)}
+.btn-soft{background:#eef0ff;color:var(--vio);border:0;border-radius:12px;padding:11px 16px;font-weight:700}
+/* KPI */
+.kpi{position:relative;overflow:hidden;color:#fff;border:0}
+.kpi .ic{position:absolute;right:-6px;bottom:-14px;font-size:84px;opacity:.16}
+.kpi .lbl{font-size:13px;font-weight:600;opacity:.88}
+.kpi .num{font-size:42px;font-weight:800;line-height:1.1;letter-spacing:-1px;margin:6px 0 2px}
+.kpi.k1{background:linear-gradient(135deg,#5b4bff,#8a7dff)}
+.kpi.k2{background:linear-gradient(135deg,#0ea67a,#4fd8a8)}
+.kpi.k3{background:linear-gradient(135deg,#ff8a1f,#ffc34d)}
+.chart-box{position:relative;height:290px}
+/* Table */
+.tbl{width:100%;font-size:13.5px}
+.tbl th{font-size:12px;color:var(--mute);font-weight:700;padding:10px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+.tbl td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:#fafbff}
+.pill{display:inline-block;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-done{background:#e0f8ef;color:#0b8a65}.p-proses{background:#fff2dc;color:#c27800}.p-belum{background:#ffe4ea;color:#c42a4d}.p-lain{background:#eceeff;color:var(--vio)}
+.avatar{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--vio2),var(--vio));color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.empty{text-align:center;color:var(--mute);padding:34px 10px}
+.empty i{font-size:34px;display:block;margin-bottom:6px;opacity:.5}
+.form-title{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.form-title .ic{width:44px;height:44px;border-radius:14px;background:#eef0ff;color:var(--vio);display:grid;place-items:center;font-size:21px}
+.fl{font-size:12.5px;font-weight:700;margin-bottom:5px;color:#454a7a}
+.sticky-form{position:sticky;top:22px}
+.skeleton{animation:sk 1.2s infinite alternate}@keyframes sk{from{opacity:.55}to{opacity:1}}
+.toastx{position:fixed;right:24px;bottom:24px;z-index:99;padding:14px 20px;border-radius:14px;color:#fff;font-weight:600;font-size:14px;box-shadow:0 16px 40px -10px rgba(0,0,0,.4);transform:translateY(30px);opacity:0;pointer-events:none;transition:.35s}
+.toastx.show{transform:none;opacity:1}
+.coming{display:grid;place-items:center;min-height:60vh;text-align:center}
+.coming i{font-size:64px;color:var(--vio);opacity:.7}
+
+.nav-group .chev{margin-left:auto;font-size:14px;transition:transform .25s}
+.nav-group.open .chev{transform:rotate(180deg)}
+.nav-group.on>.nav-parent{color:#fff;background:rgba(255,255,255,.07)}
+.sub-nav{max-height:0;overflow:hidden;transition:max-height .3s ease;margin:0 0 6px 24px;padding-left:10px;border-left:1.5px solid rgba(255,255,255,.14)}
+.nav-group.open .sub-nav{max-height:220px}
+.sub-item{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:#aab0dd;font-weight:600;font-size:13.5px;padding:10px 12px;border-radius:11px;margin-top:4px;text-align:left;transition:.2s}
+.sub-item:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sub-item.active{color:#fff;background:linear-gradient(90deg,var(--vio),#7a6cff);box-shadow:0 8px 20px rgba(91,75,255,.4)}
+.formwrap{max-width:900px;margin:0 auto}
+.formhead{background:linear-gradient(120deg,var(--ink2),var(--vio));color:#fff;border-radius:var(--r) var(--r) 0 0;padding:26px 30px;display:flex;align-items:center;gap:16px}
+.formhead .ic{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:26px}
+.formhead h4{margin:0;font-weight:800;font-size:21px}.formhead p{margin:2px 0 0;opacity:.8;font-size:13.5px}
+.formbody{background:var(--card);border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r) var(--r);padding:8px 30px 30px;box-shadow:0 12px 34px -18px rgba(33,36,94,.28)}
+.fsec{display:flex;align-items:center;gap:10px;margin:26px 0 14px;font-weight:800;font-size:14.5px}
+.fsec i{width:30px;height:30px;border-radius:10px;background:#eef0ff;color:var(--vio);display:grid;place-items:center;font-size:15px}
+.fsec:after{content:"";flex:1;height:1px;background:var(--line)}
+.formbody .form-control,.formbody .form-select{padding:12px 14px}
+.tbl td,.tbl th{white-space:nowrap}
+@media(max-width:991px){.side{transform:translateX(-100%)}.side.open{transform:none}.main{margin-left:0;padding:20px 16px 40px}.burger{display:block}.sticky-form{position:static}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<aside class="side" id="side">
+  <div class="brand"><div class="logo"><i class="bi bi-people-fill"></i></div><div><b>Pemenuhan</b><small>Dashboard SDM</small></div></div>
+  <div class="nav-group open on" id="grp">
+    <button class="nav-item nav-parent" id="grpBtn"><i class="bi bi-person-check"></i>Pemenuhan Pengganti<i class="bi bi-chevron-down chev"></i></button>
+    <div class="sub-nav">
+      <button class="sub-item active" data-view="dash"><i class="bi bi-speedometer2"></i>Dashboard</button>
+      <button class="sub-item" data-view="form"><i class="bi bi-pencil-square"></i>Form Input</button>
+      <button class="sub-item" data-view="tabel"><i class="bi bi-table"></i>Tabel Data</button>
+    </div>
+  </div>
+  <button class="nav-item" data-view="project"><i class="bi bi-kanban"></i>Pemenuhan Project</button>
+  <div class="side-foot"><span class="dot" id="dot"></span><span id="conn">Menghubungkan…</span></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div><h1 id="pgTitle"></h1><p id="pgSub"></p></div>
+    </div>
+    <button class="btn-soft" id="btnRefresh"><i class="bi bi-arrow-repeat me-1"></i>Muat ulang</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <section class="view" id="view-dash">
+    <div class="filters">
+      <div style="min-width:200px"><label>Status keluar</label><select class="form-select" id="fKeluar"><option value="">Semua status keluar</option></select></div>
+      <div style="min-width:200px"><label>Status pengganti</label><select class="form-select" id="fGanti"><option value="">Semua status pengganti</option></select></div>
+      <div style="min-width:200px"><label>Kantor</label><select class="form-select" id="fKantor"><option value="">Semua kantor</option></select></div>
+      <button class="btn-soft" id="btnReset"><i class="bi bi-x-circle me-1"></i>Reset filter</button>
+    </div>
+    <div class="sub mb-3" id="fInfo"></div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4"><div class="cardx kpi k1"><div class="lbl">Total pegawai keluar</div><div class="num" id="kTotal">0</div><div class="lbl" id="kTotalSub">semua status keluar</div><i class="bi bi-box-arrow-right ic"></i></div></div>
+      <div class="col-md-4"><div class="cardx kpi k2"><div class="lbl">Pengganti done</div><div class="num" id="kDone">0</div><div class="lbl" id="kDonePct">0%</div><i class="bi bi-check2-circle ic"></i></div></div>
+      <div class="col-md-4"><div class="cardx kpi k3"><div class="lbl">Dalam proses</div><div class="num" id="kProses">0</div><div class="lbl">sedang berjalan</div><i class="bi bi-hourglass-split ic"></i></div></div>
+      <div class="col-lg-6"><div class="cardx"><h5>Status pengganti</h5><div class="sub mb-2">Jumlah per status penggantian</div><div class="chart-box"><canvas id="chGanti"></canvas></div></div></div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="view" id="view-form" style="display:none">
+    <div class="formwrap">
+      <div class="formhead"><div class="ic"><i class="bi bi-person-plus"></i></div><div><h4>Input data pegawai keluar</h4><p>Data langsung tersimpan ke sheet pegawai-pengganti.</p></div></div>
+      <form class="formbody" id="frm" autocomplete="off">
+        <div class="fsec"><i class="bi bi-person-badge"></i>Data pegawai</div>
+        <div class="row g-3">
+          <div class="col-md-6"><div class="fl">Nama</div><input class="form-control" name="nama" required></div>
+          <div class="col-md-6"><div class="fl">NPP</div><input class="form-control" name="npp" required></div>
+          <div class="col-md-4"><div class="fl">Tanggal keluar</div><input type="date" class="form-control" name="tanggalKeluar" required></div>
+          <div class="col-md-4"><div class="fl">Status keluar</div><select class="form-select" name="statusKeluar" id="selKeluar" required></select></div>
+          <div class="col-md-4"><div class="fl">Kantor</div><input class="form-control" name="kantor" list="dlKantor" required><datalist id="dlKantor"></datalist></div>
+        </div>
+        <div class="fsec"><i class="bi bi-envelope-paper"></i>Surat nitro</div>
+        <div class="row g-3">
+          <div class="col-md-6"><div class="fl">No surat nitro</div><input class="form-control" name="noSurat"></div>
+          <div class="col-md-6"><div class="fl">Tanggal surat</div><input type="date" class="form-control" name="tanggalSurat"></div>
+        </div>
+        <div class="fsec"><i class="bi bi-person-check"></i>Penggantian</div>
+        <div class="row g-3">
+          <div class="col-md-4"><div class="fl">Status pengganti</div><select class="form-select" name="statusPengganti" id="selGanti" required></select></div>
+          <div class="col-md-4"><div class="fl">Nama pengganti</div><input class="form-control" name="namaPengganti"></div>
+          <div class="col-md-4"><div class="fl">Tanggal masuk</div><input type="date" class="form-control" name="tanggalMasuk"></div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end mt-4">
+          <button class="btn-soft" type="reset">Kosongkan</button>
+          <button class="btn-vio" id="btnSave" type="submit"><i class="bi bi-check2 me-1"></i>Simpan data</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- TABEL -->
+  <section class="view" id="view-tabel" style="display:none">
+    <div class="cardx">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div><h5>Sheet pegawai-pengganti</h5><div class="sub" id="tblInfo"></div></div>
+        <input class="form-control" id="fCari" placeholder="Cari nama / NPP…" style="max-width:250px">
+      </div>
+      <div class="table-responsive"><table class="tbl">
+        <thead><tr><th>No</th><th>Nama</th><th>NPP</th><th>Tanggal keluar</th><th>Status keluar</th><th>Kantor</th><th>No surat nitro</th><th>Tanggal surat</th><th>Status pengganti</th><th>Nama pengganti</th><th>Tanggal masuk</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- PROJECT -->
+  <section class="view" id="view-project" style="display:none">
+    <div class="coming"><div><i class="bi bi-kanban"></i><h3 class="fw-bold mt-3">Pemenuhan Project</h3><p class="text-secondary">Menu ini kita bangun setelah Pemenuhan Pengganti selesai.</p></div></div>
+  </section>
+</main>
+
+<div class="toastx" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+/* ================= KONFIGURASI ================= */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzoODYL8RUwyeEol7GOY-CGhR1K3_Q2k7Xm9TFw5PwzHthAL3ccfVKdoHj81EEvBond/exec'; 
+const STATUS_KELUAR = ['Undur Diri','Habis Kontrak','Mangkir','PHK','Meninggal Dunia','Mutasi','Non Aktif','Pensiun'];
+const STATUS_GANTI  = ['Done','Proses'];
+/* ============================================== */
+
+const $ = s => document.querySelector(s);
+const demo = GAS_URL.startsWith('PASTE');
+let rows = [], charts = {};
+
+/* ---------- Cache lokal (localStorage) ---------- */
+const CACHE_KEY='pemenuhan_pengganti_v1';
+function cacheRead(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY));return c&&Array.isArray(c.data)?c:null}catch(e){return null}}
+function cacheWrite(data){try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),data}))}catch(e){}}
+function ago(t){const s=Math.round((Date.now()-t)/1000);if(s<60)return 'baru saja';if(s<3600)return Math.round(s/60)+' menit lalu';if(s<86400)return Math.round(s/3600)+' jam lalu';return Math.round(s/86400)+' hari lalu';}
+
+/* ---------- API ---------- */
+// fetch dengan timeout + parsing aman (GAS kadang membalas HTML saat error / cold start)
+async function fetchJson(url,opt,timeout=30000){
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),timeout);
+  try{
+    const r=await fetch(url,{...opt,signal:ctl.signal});
+    const txt=await r.text(); let j;
+    try{j=JSON.parse(txt)}catch(e){throw new Error('Respons server bukan JSON (cek deployment GAS & akses "Anyone")')}
+    if(!j.ok) throw new Error(j.error||'Server menolak permintaan');
+    return j;
+  }catch(e){ if(e.name==='AbortError') throw new Error('Waktu tunggu habis'); throw e; }
+  finally{clearTimeout(tm)}
+}
+// ulangi otomatis (cold start GAS sering gagal di percobaan pertama)
+async function withRetry(fn,tries=3){let err;for(let i=0;i<tries;i++){try{return await fn()}catch(e){err=e;if(i<tries-1)await new Promise(r=>setTimeout(r,800*2**i))}}throw err;}
+async function apiList(fresh){
+  if(demo) return demoData();
+  const j=await withRetry(()=>fetchJson(GAS_URL+'?action=list'+(fresh?'&fresh=1':'')+'&t='+Date.now()));
+  return j.data;
+}
+async function apiPost(body){
+  if(demo){ rows=normalize([{...body,row:Date.now()},...rows]); return {ok:true}; }
+  // text/plain => "simple request", tidak memicu preflight CORS. Tanpa retry otomatis agar tidak dobel simpan.
+  return fetchJson(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+}
+function demoData(){
+  const n=[['Andi Pratama','10231','Undur Diri','Jakarta','Done'],['Siti Rahma','10456','Pensiun','Bandung','Proses'],['Budi Santoso','10788','Undur Diri','Surabaya','Proses'],['Dewi Lestari','10912','Habis Kontrak','Jakarta','Done'],['Rizky Hakim','11034','Mutasi','Medan','Done'],['Maya Putri','11177','PHK','Bandung','Proses'],['Fajar Nugroho','11205','Undur Diri','Jakarta','Proses'],['Lina Marlina','11390','Pensiun','Surabaya','Done']];
+  return n.map((x,i)=>({row:i+2,nama:x[0],npp:x[1],tanggalKeluar:`2026-0${1+i%9}-1${i%9}`,statusKeluar:x[2],kantor:x[3],noSurat:'NTR/'+(100+i),tanggalSurat:'2026-0'+(1+i%9)+'-20',statusPengganti:x[4],namaPengganti:'Pengganti '+(i+1),tanggalMasuk:x[4]==='Done'?'2026-0'+(2+i%8)+'-05':''}));
+}
+
+/* ---------- Normalisasi (hapus duplikat akibat beda huruf/spasi) ---------- */
+const key = s => String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
+const ALIAS={'berakhir kontrak':'Habis Kontrak','kontrak habis':'Habis Kontrak','tidak aktif':'Non Aktif','nonaktif':'Non Aktif','undurdiri':'Undur Diri','mengundurkan diri':'Undur Diri'};
+function canon(list){const m={};list.forEach(x=>m[key(x)]=x);Object.entries(ALIAS).forEach(([k,v])=>{if(list.includes(v))m[k]=v;});return v=>m[key(v)]||String(v||'').trim();}
+function normalize(data){
+  const ck=canon(STATUS_KELUAR), cg=canon(STATUS_GANTI), seen={};
+  return data.map(r=>{
+    const k=key(r.kantor); if(k&&!seen[k]) seen[k]=String(r.kantor).trim().replace(/\s+/g,' ');
+    return {...r,statusKeluar:ck(r.statusKeluar),statusPengganti:cg(r.statusPengganti),kantor:k?seen[k]:''};
+  });
+}
+
+/* ---------- Helpers ---------- */
+const uniq = k => [...new Set(rows.map(r=>r[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD = d => { if(!d) return '–'; const x=new Date(d); return isNaN(x)?esc(d):x.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); };
+const low = s => String(s||'').toLowerCase();
+const pillCls = s => ({done:'p-done',proses:'p-proses',belum:'p-belum'}[low(s)]||'p-lain');
+function toast(msg,ok=true){const t=$('#toast');t.textContent=msg;t.style.background=ok?'#0ea67a':'#e8436b';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+function countUp(el,to){cancelAnimationFrame(el._raf);const from=+el.textContent||0,t0=performance.now();const step=t=>{const p=Math.min((t-t0)/450,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)el._raf=requestAnimationFrame(step);else el.textContent=to};el._raf=requestAnimationFrame(step);}
+
+/* ---------- Filter & render ---------- */
+const getF=()=>({statusKeluar:$('#fKeluar').value,statusPengganti:$('#fGanti').value,kantor:$('#fKantor').value});
+const match=(r,f,skip)=>Object.keys(f).every(k=>k===skip||!f[k]||r[k]===f[k]);
+function filtered(){const f=getF();return rows.filter(r=>match(r,f));}
+function fillSelect(sel,first,list,counts,cur){
+  sel.innerHTML=`<option value="">${first}</option>`+list.map(x=>`<option value="${esc(x)}">${esc(x)} (${counts[x]||0})</option>`).join('');
+  sel.value=list.includes(cur)?cur:'';
+}
+// Filter bertingkat: tiap dropdown hanya menampilkan opsi yang MASIH punya data
+// berdasarkan pilihan di dropdown lain, lengkap dengan jumlahnya -> tidak ada kombinasi "0".
+function buildFilters(){
+  const f=getF();
+  [['#fKeluar','statusKeluar','Semua status keluar',STATUS_KELUAR],
+   ['#fGanti','statusPengganti','Semua status pengganti',STATUS_GANTI],
+   ['#fKantor','kantor','Semua kantor',null]].forEach(([id,k,first,base])=>{
+    const counts={};
+    rows.forEach(r=>{if(r[k]&&match(r,f,k))counts[r[k]]=(counts[r[k]]||0)+1;});
+    let all=[...new Set([...(base||[]),...rows.map(r=>r[k]).filter(Boolean)])];
+    if(!base) all.sort((x,y)=>x.localeCompare(y,'id'));
+    all=all.filter(x=>counts[x]||x===f[k]);
+    fillSelect($(id),first,all,counts,f[k]);
+  });
+}
+function buildFormLists(){
+  const kantor=[...new Set(rows.map(r=>r.kantor).filter(Boolean))].sort((x,y)=>x.localeCompare(y,'id'));
+  $('#selKeluar').innerHTML=STATUS_KELUAR.map(x=>`<option>${esc(x)}</option>`).join('');
+  $('#selGanti').innerHTML=STATUS_GANTI.map(x=>`<option>${esc(x)}</option>`).join('');
+  $('#dlKantor').innerHTML=kantor.map(x=>`<option value="${esc(x)}">`).join('');
+}
+const PAL=['#5b4bff','#12b886','#ffa62b','#f0506e','#2fb4ff','#a66cff','#7a8099'];
+function drawChart(id,type,labels,data,colors){
+  const ctx=$(id); if(!ctx) return; // canvas tidak ada -> lewati, jangan sampai merusak render lain
+  if(charts[id]){charts[id].data.labels=labels;charts[id].data.datasets[0].data=data;charts[id].data.datasets[0].backgroundColor=colors;charts[id].update();return;}
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:type==='doughnut'?4:0,borderColor:'#fff',borderRadius:type==='bar'?10:0,maxBarThickness:46}]},
+    options:{maintainAspectRatio:false,cutout:'66%',plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{usePointStyle:true,font:{family:'Plus Jakarta Sans',weight:600}}}},
+      scales:type==='bar'?{y:{beginAtZero:true,ticks:{precision:0},grid:{color:'#eef0f8'},border:{display:false}},x:{grid:{display:false}}}:{}}});
+}
+function group(list,key){const m={};list.forEach(r=>{const k=r[key]||'(kosong)';m[k]=(m[k]||0)+1});return m;}
+
+function render(){
+  const f=filtered(), n=f.length, g=s=>f.filter(r=>low(r.statusPengganti)===s).length;
+  const fv=getF(), act=Object.values(fv).filter(Boolean);
+  countUp($('#kTotal'),n); $('#kTotalSub').textContent=act.length?act.join(' • '):'semua data';
+  $('#fInfo').innerHTML=n?`Menampilkan <b>${n}</b> dari ${rows.length} data${act.length?' (filter aktif: '+act.length+')':''}`:(rows.length?'Tidak ada data untuk kombinasi filter ini. Klik <b>Reset filter</b>.':'Belum ada data.');
+  countUp($('#kDone'),g('done')); $('#kDonePct').textContent=(n?Math.round(g('done')/n*100):0)+'% dari total';
+  countUp($('#kProses'),g('proses'));
+
+  const gk=group(f,'statusKeluar'), gp=group(f,'statusPengganti');
+  const gpl=STATUS_GANTI;
+  drawChart('#chKeluar','doughnut',Object.keys(gk),Object.values(gk),Object.keys(gk).map((_,i)=>PAL[i%PAL.length])); // otomatis dilewati bila canvas #chKeluar tidak ada
+  const cm={Done:'#12b886',Proses:'#ffa62b'};
+  drawChart('#chGanti','bar',gpl,gpl.map(k=>gp[k]||0),gpl.map((k,i)=>cm[k]||PAL[i%PAL.length]));
+
+}
+
+function renderTable(){
+  const q=low($('#fCari').value), f=rows.filter(r=>!q||low(r.nama).includes(q)||low(r.npp).includes(q));
+  $('#tblInfo').textContent=`${f.length} dari ${rows.length} data`;
+  $('#tbody').innerHTML=f.length?f.map((r,i)=>`<tr><td class="sub">${i+1}</td>
+    <td class="fw-bold">${esc(r.nama)}</td><td>${esc(r.npp)}</td><td>${fmtD(r.tanggalKeluar)}</td>
+    <td><span class="pill p-lain">${esc(r.statusKeluar||'–')}</span></td><td>${esc(r.kantor||'–')}</td>
+    <td>${esc(r.noSurat||'–')}</td><td>${fmtD(r.tanggalSurat)}</td>
+    <td><span class="pill ${pillCls(r.statusPengganti)}">${esc(r.statusPengganti||'–')}</span></td>
+    <td>${esc(r.namaPengganti||'–')}</td><td>${fmtD(r.tanggalMasuk)}</td>
+    <td><button class="btn btn-sm text-danger" data-del="${r.row}" title="Hapus"><i class="bi bi-trash3"></i></button></td></tr>`).join('')
+    :`<tr><td colspan="12"><div class="empty"><i class="bi bi-inbox"></i>Belum ada data yang cocok. Tambah data lewat menu Form Input.</div></td></tr>`;
+}
+
+/* ---------- Load (cache dulu, lalu segarkan di latar belakang) ---------- */
+let loading=false;
+const setConn=(ok,msg)=>{$('#dot').className='dot'+(ok?'':' off');$('#conn').textContent=msg;};
+function paint(){buildFormLists();buildFilters();render();renderTable();}
+async function load(fresh){
+  if(loading) return; loading=true;
+  if(!demo&&!rows.length){
+    const c=cacheRead();
+    if(c){rows=normalize(c.data);paint();setConn(false,'Cache • '+ago(c.t)+' · menyegarkan…');}
+    else $('#tbody').innerHTML=`<tr><td colspan="12" class="empty skeleton">Memuat data… (koneksi pertama bisa 5–10 detik)</td></tr>`;
+  }else if(rows.length) setConn(false,'Menyegarkan…');
+  let data=null,err=null;
+  try{ data=await apiList(fresh); }catch(e){ err=e; }
+  if(data){
+    rows=normalize(data); if(!demo) cacheWrite(data);
+    try{ paint(); }catch(e){ console.error('Render error',e); toast('Data dimuat, tetapi ada kesalahan tampilan',false); }
+    setConn(!demo, demo?'Mode demo (GAS belum diisi)':'Terhubung • '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}));
+  }else if(rows.length){
+    const c=cacheRead(); setConn(false,'Offline • data cache'+(c?' ('+ago(c.t)+')':''));
+    toast('Gagal menyegarkan ('+err.message+'). Memakai data tersimpan.',false);
+  }else{
+    setConn(false,'Gagal terhubung');
+    $('#tbody').innerHTML=`<tr><td colspan="12"><div class="empty"><i class="bi bi-wifi-off"></i>Data gagal dimuat: ${esc(err.message)}.<br>Pastikan GAS di-deploy sebagai Web app dengan akses "Anyone".<br><button class="btn-soft mt-3" data-retry>Coba lagi</button></div></td></tr>`;
+    toast('Gagal memuat data',false);
+  }
+  loading=false;
+}
+
+/* ---------- Events ---------- */
+['#fKeluar','#fGanti','#fKantor'].forEach(s=>$(s).addEventListener('change',()=>{buildFilters();render();}));
+$('#fCari').addEventListener('input',renderTable);
+$('#btnReset').onclick=()=>{['#fKeluar','#fGanti','#fKantor'].forEach(s=>$(s).value='');buildFilters();render();};
+$('#btnRefresh').onclick=()=>load(true);
+$('#burger').onclick=()=>$('#side').classList.toggle('open');
+const PAGES={
+  dash:['Dashboard Pemenuhan Pengganti','Pantau pegawai keluar dan progres penggantinya.'],
+  form:['Form Input','Catat pegawai keluar beserta data penggantinya.'],
+  tabel:['Tabel Data','Seluruh isi sheet pegawai-pengganti.'],
+  project:['Pemenuhan Project','Segera hadir.']};
+function go(v){
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  document.querySelectorAll('.view').forEach(x=>x.style.display=x.id==='view-'+v?'':'none');
+  $('#grp').classList.toggle('on',v!=='project');
+  $('#pgTitle').textContent=PAGES[v][0];$('#pgSub').textContent=PAGES[v][1];
+  $('#btnRefresh').style.display=v==='form'||v==='project'?'none':'';
+  $('#side').classList.remove('open');
+  if(v==='dash')Object.values(charts).forEach(c=>c.resize());
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>go(b.dataset.view));
+$('#grpBtn').onclick=()=>$('#grp').classList.toggle('open');
+go('dash');
+$('#frm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const btn=$('#btnSave'),old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan…';
+  try{
+    const body=Object.fromEntries(new FormData(e.target));body.action='add';
+    await apiPost(body); toast('Data tersimpan'); e.target.reset();
+    if(demo){paint();}else await load(true);
+  }catch(err){toast('Gagal menyimpan: '+err.message,false);}
+  btn.disabled=false;btn.innerHTML=old;
+});
+$('#tbody').addEventListener('click',async e=>{
+  if(e.target.closest('[data-retry]')){load(true);return;}
+  const b=e.target.closest('[data-del]'); if(!b||!confirm('Hapus data ini dari spreadsheet?')) return;
+  try{
+    if(demo){rows=rows.filter(r=>String(r.row)!==b.dataset.del);paint();}
+    else{const r=rows.find(x=>String(x.row)===b.dataset.del)||{};await apiPost({action:'delete',row:+b.dataset.del,nama:r.nama,npp:r.npp});await load(true);}
+    toast('Data dihapus');
+  }catch(err){toast('Gagal menghapus: '+err.message,false);}
+});
+load();
+</script>
+</body>
+</html>
